@@ -162,20 +162,20 @@ function logout() {
 
   // Check if user is authenticated
 firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      // User is signed in
-      if (window.location.pathname === '/index.html') {
-        // Redirect to welcome page
-        window.location.href = 'welcome.html';
-      }
-    } else {
-      // User is not signed in
-      if (window.location.pathname !== '/index.html') {
-        // Redirect to login page
-        window.location.href = 'index.html';
-      }
+  if (user) {
+    // User is signed in
+    if (window.location.pathname.includes('/index.html')) {
+      // Redirect to welcome page
+      window.location.href = 'welcome.html';
     }
-  });
+  } else {
+    // User is not signed in
+    if (window.location.pathname.includes('/welcome.html')) {
+      // Redirect to login page
+      window.location.href = 'index.html';
+    }
+  }
+});
   
   // Set up account removal listener
   firebase.auth().onAuthStateChanged(function(user) {

@@ -91,22 +91,56 @@ function login() {
       }
 
       // Add this user to Firebase Database
-      var database_ref = database.ref();
+      var userRef = database.ref('users/' + user.uid);
 
-      // Create User data
-      var user_data = {
-        last_login: Date.now(),
-        user_tokens: []
-      };
+      // Check if user is already logged in on another device
+      userRef.once('value', function(snapshot) {
+        if (snapshot.exists()) {
+          var userData = snapshot.val();
+          if (userData.isLoggedIn) {
+            auth.signOut()
+              .then(function() {
+                alert('You are already logged in on another device. Please log out from that device to continue.');
+              })
+              .catch(function(error) {
+                var error_message = error.message;
+                alert(error_message);
+              });
+          } else {
+            // Update user's login status
+            userRef.update({
+              isLoggedIn: true
+            })
+              .then(function() {
+                // Done
+                alert('User Logged In!!');
 
-      // Push to Firebase Database
-      database_ref.child('users/' + user.uid).update(user_data);
+                // Redirect to welcome page
+                window.location.href = 'welcome.html';
+              })
+              .catch(function(error) {
+                var error_message = error.message;
+                alert(error_message);
+              });
+          }
+        } else {
+          // User does not exist in the database, create new entry
+          userRef.set({
+            isLoggedIn: true
+          })
+            .then(function() {
+              // Done
+              alert('User Logged In!!');
 
-      // Done
-      alert('User Logged In!!');
-
-      // Redirect to welcome page
-      window.location.href = 'welcome.html';
+              // Redirect to welcome page
+              window.location.href = 'welcome.html';
+            })
+            .catch(function(error) {
+              var error_message = error.message;
+              alert(error_message);
+            });
+        }
+      });
     })
     .catch(function(error) {
       // Firebase will use this to alert its errors

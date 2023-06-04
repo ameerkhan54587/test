@@ -10,157 +10,154 @@ var firebaseConfig = {
   };
   
   // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  
-  // Initialize variables
-  const auth = firebase.auth();
-  const database = firebase.database();
-  
-  // Set up our register function
-  function register() {
-    // Get all our input fields
-    email = document.getElementById('email').value;
-    password = document.getElementById('password').value;
-  
-    // Validate input fields
-    if (validate_email(email) == false || validate_password(password) == false) {
-      alert('Email or Password is Outta Line!!');
-      return;
-      // Don't continue running the code
-    }
-  
-    // Move on with Auth
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(function() {
-        // Declare user variable
-        var user = auth.currentUser;
-  
-        // Add this user to Firebase Database
-        var database_ref = database.ref();
-  
-        // Create User data
-        var user_data = {
-          email: email,
-          last_login: Date.now()
-        };
-  
-        // Push to Firebase Database
-        database_ref.child('users/' + user.uid).set(user_data);
-  
-        // Done
-        alert('User Created!!');
-      })
-      .catch(function(error) {
-        // Firebase will use this to alert its errors
-        var error_code = error.code;
-        var error_message = error.message;
-  
-        alert(error_message);
-      });
+firebase.initializeApp(firebaseConfig);
+
+// Initialize variables
+const auth = firebase.auth();
+const database = firebase.database();
+
+// Set up our register function
+function register() {
+  // Get all our input fields
+  var email = document.getElementById('email').value;
+  var password = document.getElementById('password').value;
+
+  // Validate input fields
+  if (validate_email(email) == false || validate_password(password) == false) {
+    alert('Email or Password is Outta Line!!');
+    return;
   }
-  
- // Set up our login function
+
+  // Move on with Auth
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(function() {
+      // Declare user variable
+      var user = auth.currentUser;
+
+      // Add this user to Firebase Database
+      var database_ref = database.ref();
+
+      // Create User data
+      var user_data = {
+        email: email,
+        last_login: Date.now(),
+        user_tokens: []
+      };
+
+      // Push to Firebase Database
+      database_ref.child('users/' + user.uid).set(user_data);
+
+      // Done
+      alert('User Created!!');
+    })
+    .catch(function(error) {
+      // Firebase will use this to alert its errors
+      var error_code = error.code;
+      var error_message = error.message;
+
+      alert(error_message);
+    });
+}
+
+// Set up our login function
 function login() {
-    // Get all our input fields
-    email = document.getElementById('email').value;
-    password = document.getElementById('password').value;
-  
-    // Validate input fields
-    if (validate_email(email) == false || validate_password(password) == false) {
-      alert('Email or Password is Outta Line!!');
-      return;
-      // Don't continue running the code
-    }
-  
-    auth.signInWithEmailAndPassword(email, password)
-      .then(function() {
-        // Declare user variable
-        var user = auth.currentUser;
-  
-        // Check if user is already logged in on another device
-        if (user && user.uid !== firebase.auth().currentUser.uid) {
-          // Sign out from the current device
-          auth.signOut()
-            .then(function() {
-              alert('You are already logged in on another device. Please log in again.');
-            })
-            .catch(function(error) {
-              var error_message = error.message;
-              alert(error_message);
-            });
-          return;
-        }
-  
-        // Add this user to Firebase Database
-        var database_ref = database.ref();
-  
-        // Create User data
-        var user_data = {
-          last_login: Date.now()
-        };
-  
-        // Push to Firebase Database
-        database_ref.child('users/' + user.uid).update(user_data);
-  
-        // Done
-        alert('User Logged In!!');
-  
-        // Redirect to welcome page
-        window.location.href = 'welcome.html';
-      })
-      .catch(function(error) {
-        // Firebase will use this to alert its errors
-        var error_code = error.code;
-        var error_message = error.message;
-  
-        alert(error_message);
-      });
-  }
-  
-  
-  // Validate Functions
-  function validate_email(email) {
-    expression = /^[^@]+@\w+(\.\w+)+\w$/;
-    if (expression.test(email) == true) {
-      // Email is good
-      return true;
-    } else {
-      // Email is not good
-      return false;
-    }
-  }
-  
-  function validate_password(password) {
-    // Firebase only accepts lengths greater than 6
-    if (password.length < 6) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  
+  // Get all our input fields
+  var email = document.getElementById('email').value;
+  var password = document.getElementById('password').value;
 
-  // Logout function
+  // Validate input fields
+  if (validate_email(email) == false || validate_password(password) == false) {
+    alert('Email or Password is Outta Line!!');
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(function() {
+      // Declare user variable
+      var user = auth.currentUser;
+
+      // Check if user is already logged in on another device
+      if (user && user.uid !== firebase.auth().currentUser.uid) {
+        // Sign out from the current device
+        auth.signOut()
+          .then(function() {
+            alert('You are already logged in on another device. Please log in again.');
+          })
+          .catch(function(error) {
+            var error_message = error.message;
+            alert(error_message);
+          });
+        return;
+      }
+
+      // Add this user to Firebase Database
+      var database_ref = database.ref();
+
+      // Create User data
+      var user_data = {
+        last_login: Date.now(),
+        user_tokens: []
+      };
+
+      // Push to Firebase Database
+      database_ref.child('users/' + user.uid).update(user_data);
+
+      // Done
+      alert('User Logged In!!');
+
+      // Redirect to welcome page
+      window.location.href = 'welcome.html';
+    })
+    .catch(function(error) {
+      // Firebase will use this to alert its errors
+      var error_code = error.code;
+      var error_message = error.message;
+
+      alert(error_message);
+    });
+}
+
+// Validate Functions
+function validate_email(email) {
+  expression = /^[^@]+@\w+(\.\w+)+\w$/;
+  if (expression.test(email) == true) {
+    // Email is good
+    return true;
+  } else {
+    // Email is not good
+    return false;
+  }
+}
+
+function validate_password(password) {
+  // Firebase only accepts lengths greater than 6
+  if (password.length < 6) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// Logout function
 function logout() {
-    auth.signOut()
-      .then(function() {
-        // Sign-out successful
-        alert('User Logged Out!!');
-  
-        // Redirect to login page
-        window.location.href = 'index.html';
-      })
-      .catch(function(error) {
-        // An error happened
-        var error_code = error.code;
-        var error_message = error.message;
-  
-        alert(error_message);
-      });
-  }
-  
+  auth.signOut()
+    .then(function() {
+      // Sign-out successful
+      alert('User Logged Out!!');
 
-  // Check if user is authenticated
+      // Redirect to login page
+      window.location.href = 'index.html';
+    })
+    .catch(function(error) {
+      // An error happened
+      var error_code = error.code;
+      var error_message = error.message;
+
+      alert(error_message);
+    });
+}
+
+// Check if user is authenticated
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     // User is signed in
@@ -176,26 +173,45 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
   }
 });
-  
-  // Set up account removal listener
-  firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      // User is signed in
-      const userRef = firebase.database().ref('users/' + user.uid);
-  
-      userRef.on('value', function(snapshot) {
-        if (!snapshot.exists()) {
-          // User's account has been removed
-          firebase.auth().signOut().then(function() {
-            // User logged out successfully
-            alert('Your account has been removed. You have been logged out.');
-            window.location.href = 'index.html';
-          }).catch(function(error) {
-            // An error occurred while logging out
-            console.log(error);
-          });
-        }
-      });
-    }
-  });
+
+// Set up account removal listener
+firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    // User is signed in
+    const userRef = firebase.database().ref('users/' + user.uid);
+
+    userRef.on('value', function(snapshot) {
+      if (!snapshot.exists()) {
+        // User's account has been removed
+        firebase.auth().signOut().then(function() {
+          // User logged out successfully
+          alert('Your account has been removed. You have been logged out.');
+          window.location.href = 'index.html';
+        }).catch(function(error) {
+          // An error occurred while logging out
+          console.log(error);
+        });
+      }
+    });
+  }
+});
+
+// Set up token removal listener
+firebase.auth().onIdTokenChanged(function(user) {
+  if (user) {
+    // User is signed in
+    const userRef = firebase.database().ref('users/' + user.uid);
+
+    userRef.child('user_tokens').once('value', function(snapshot) {
+      const tokens = snapshot.val();
+
+      // Remove all tokens except the current one
+      const currentToken = firebase.auth().currentUser.getIdToken();
+      const filteredTokens = tokens.filter(token => token !== currentToken);
+
+      // Update the user's tokens
+      userRef.child('user_tokens').set(filteredTokens);
+    });
+  }
+});
   

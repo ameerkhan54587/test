@@ -81,7 +81,7 @@ function login() {
         // Sign out from the current device
         auth.signOut()
           .then(function() {
-            alert('You are already logged in on another device. Please log in again.');
+            alert('You are already logged in on another device. Please log out from that device to continue.');
           })
           .catch(function(error) {
             var error_message = error.message;
@@ -116,6 +116,7 @@ function login() {
       alert(error_message);
     });
 }
+
 
 // Validate Functions
 function validate_email(email) {
